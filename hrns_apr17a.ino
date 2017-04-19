@@ -25,10 +25,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  float winkel;
+  int winkel = 0;
   readAccValues();
 
-  winkel = sqrt(accx * accx );
+  winkel = sqrt( accx*accx );
 
   if (winkel >= 10){
     //stepcount += 1;
@@ -47,7 +47,7 @@ void loop() {
   }else{
     digitalWrite( led2, LOW);
   }*/
-
+  accUpdate();
   delay(50);
 
   

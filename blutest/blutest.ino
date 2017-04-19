@@ -1,5 +1,8 @@
 #include <Arduino.h>
-#include <mbed.h>
+//#include <mbed.h>
+//#include <i2c.h>
+#include <icrmacros.h>
+#include <SoftwareSerial.h>
 
 int counter = 0;
 int incomingByte;
