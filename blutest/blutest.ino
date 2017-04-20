@@ -1,30 +1,22 @@
 #include <Arduino.h>
 //#include <mbed.h>
 //#include <i2c.h>
-#include <icrmacros.h>
-#include <SoftwareSerial.h>
-
-int counter = 0;
-int incomingByte;
+//#include <icrmacros.h>
+//#include <SoftwareSerial.h>
+#include <ringbuffer.h>
+//int counter = 0;
+//int incomingByte;
 
 void setup() {
-  Serial.begin(115200);
+  Serial2.begin(115200);
 }
 
 void loop() {
-  // see if there's incoming serial data:
-  if (Serial.available() > 0) {
-    // read the oldest byte in the serial buffer:
-    incomingByte = Serial.read();
-    // if it's a capital R, reset the counter
-    if (incomingByte == 'R') {
-      Serial.println("RESET");
-      counter=0;
-    }
-  }
   
-  Serial.println(counter);
-  counter++;
+  Serial2.println("RESET");
+  
+  //Serial2.println(counter);
+  
   
   delay(250);
 }
