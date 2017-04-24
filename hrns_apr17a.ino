@@ -15,7 +15,7 @@ void setup() {
   pinMode (led1, OUTPUT);
   pinMode (led2, OUTPUT);
   pinMode (led3, OUTPUT);
-
+  Serial2.begin(115200);
   i2c_master_enable(I2C1, 0);
 
   lsm303Init();
@@ -28,26 +28,31 @@ void loop() {
   int winkel = 0;
   readAccValues();
 
-  winkel = sqrt( accx*accx );
-
-  if (winkel >= 10){
+  //winkel = sqrt( accx*accx );
+  Serial2.print("accx: ");
+  Serial2.print(accx);
+  Serial2.print(" ; ACCY: ");
+  Serial2.print(accy);
+  Serial2.print(" ; ACCZ: ");
+  Serial2.println(accz);
+  //if (winkel >= 10){
     //stepcount += 1;
-    digitalWrite( led1, HIGH);
-  }
-  if (winkel >= 100){
+   // digitalWrite( led1, HIGH);
+  //}
+  //if (winkel >= 100){
     //stepcount += 1;
-    digitalWrite( led2, HIGH);
-  }
-  if (winkel >= 10000){
+   // digitalWrite( led2, HIGH);
+  //}
+  //if (winkel >= 10000){
     //stepcount += 1;
-    digitalWrite( led3, HIGH);
-  }
+   // digitalWrite( led3, HIGH);
+  //}
 /*  if ((stepcount % 2) == 0){
     digitalWrite( led2, HIGH);
   }else{
     digitalWrite( led2, LOW);
   }*/
-  accUpdate();
+  //accUpdate();
   delay(50);
 
   
