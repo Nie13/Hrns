@@ -27,14 +27,18 @@ void loop() {
   // put your main code here, to run repeatedly:
   int winkel = 0;
   readAccValues();
-
-  //winkel = sqrt( accx*accx );
+  int readX = accx / 64;
+  int readY = accy / 64;
+  int readZ = accz / 64;
+  winkel = sqrt( readX * readX + readY * readY + readZ * readZ );
   Serial2.print("accx: ");
-  Serial2.print(accx);
+  Serial2.print(readX);
   Serial2.print(" ; ACCY: ");
-  Serial2.print(accy);
+  Serial2.print(readY);
   Serial2.print(" ; ACCZ: ");
-  Serial2.println(accz);
+  Serial2.print(readZ);
+  Serial2.print(" ; Winkel: ");
+  Serial2.println(winkel);
   //if (winkel >= 10){
     //stepcount += 1;
    // digitalWrite( led1, HIGH);
