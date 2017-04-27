@@ -14,7 +14,7 @@ int led4 = PE12;
 double magnitude;
 double minMagnitude;
 double maxMagnitude;
-int steps;
+int stepCount;
 
 int htinput = PC1;
 long counter = 0;
@@ -36,7 +36,7 @@ void DisplayTimer(int arg) {
   Serial2.print(", max: ");
   Serial2.print(maxMagnitude);
   Serial2.print(", steps: ");
-  Serial2.println(steps);
+  Serial2.println(stepCount);
   
   timerStart(1, 500, DisplayTimer, 0);
 }
@@ -49,6 +49,10 @@ void setup() {
   pinMode(htinput, INPUT);
 
   Serial2.begin(115200);
+
+  minMagnitude = 99999999999;
+  maxMagnitude = 0;
+  stepCount = 0;
 
   timerInit();
   timerStart(0, 5, TimerCounter, 0);
@@ -107,14 +111,10 @@ void loop() {
   readAccValues();
   magnitude = sqrt(pow(accx, 2) + pow(accy, 2) + pow(accz, 2));
 
-  minMagnitude = 99999999999;
-  maxMagnitude = 0;
-
-  if (magnitude < min) min = magnitude;
-  if (magnitude > max) max = magnitude;
+  if (magnitude < minMagnitude) minMagnitude = magnitude;
+  if (magnitude > maxMagnitude) maxMagnitude = magnitude;
   
   static int step = 0;
-  steps = 0;
 
   /*
   Serial2.print("current: ");
@@ -131,7 +131,7 @@ void loop() {
   if (magnitude > 18000) {
     if (step == 0) {
       step = 1;
-      steps++;
+      stepCount++;
     }
   } else if (magnitude < 17000) {
     step = 0;
