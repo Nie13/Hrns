@@ -11,7 +11,7 @@ int led1 = PE9;
 int led2 = PE10;
 int led3 = PE11;
 int stepcount = 0;
-//int steps[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 int winkellast = 0;
 
 float xval[100]={0};
@@ -22,33 +22,19 @@ float yavg;
 float zavg;
 int flag=0;
 int sTeps=0;
-float threshhold = 155.0;
+float threshhold = 6400.0;
 int tim = 0;
 
 
 void setup() {
-  pinMode (led1, OUTPUT);
-  pinMode (led2, OUTPUT);
-  pinMode (led3, OUTPUT);
   Serial2.begin(115200);
-  i2c_master_enable(I2C1, 0);
-  
+  i2c_master_enable(I2C1, 0); 
 
   lsm303Init();
-  // put your setup code here, to run once:
-
   calibrate();
-
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-  int winkel = 0;
-  //readAccValues();
-  //int readX = accx / 64;
-  //int readY = accy / 64;
-  //int readZ = accz / 64;
-  //winkel = sqrt( readX * readX + readY * readY + readZ * readZ - pow(270, 2));
   int acc=0;
   float totvect[100]={0};
   float totave[100]={0};
@@ -57,13 +43,15 @@ void loop() {
   float zaccl[100]={0};
   for (int i=0;i<100;i++){
     readAccValues();
-    xaccl[i]=float(accx/64.0);    
-    yaccl[i]=float(accy/64.0);    
-    zaccl[i]=float(accz/64.0);
+    xaccl[i]=float(accx);    
+    yaccl[i]=float(accy);    
+    zaccl[i]=float(accz);
     delay(1);
     totvect[i] = sqrt(((xaccl[i]-xavg)* (xaccl[i]-xavg))+ ((yaccl[i] - yavg)*(yaccl[i] - yavg)) + ((zval[i] - zavg)*(zval[i] - zavg)));
     totave[i] = (totvect[i] + totvect[i-1]) / 2 ;
     Serial2.println(totave[i]);
+    threshhold = fixThreshold(i, totave);
+    Serial2.println(threshhold);
     delay(100);
     if (totave[i]>threshhold && flag==0 ){
       sTeps=sTeps+1;
@@ -82,50 +70,6 @@ void loop() {
     Serial2.println(sTeps);
   }
    delay(100);
-    
-  
-  //Serial2.print("accx: ");
-  //Serial2.print(readX);
-  //Serial2.print(" ; ACCY: ");
-  //Serial2.print(readY);
-  //Serial2.print(" ; ACCZ: ");
-  //Serial2.print(readZ);
-  //Serial2.print(" ; Winkel: ");
-  //Serial2.println(winkel);
-  //for (int i =0; i < 19; i ++){
-  //  steps[i] = steps[i + 1];
-  //}
-  //steps[19] = winkel;
-  //if(!arrayIncluded(steps, winkellast)){
-  //  winkellast = 0;
-  //}
-  //if(winkel > 125){
-  //  if(winkel > winkellast){
-  //    winkellast = winkel;
-  //  }elsif( (float)((float)winkellast / (float) winkel) > 0.8){
-  //    Serial2.print("STEP");
-  //  }
-  //}
-  
-  //if (winkel >= 10){
-    //stepcount += 1;
-   // digitalWrite( led1, HIGH);
-  //}
-  //if (winkel >= 100){
-    //stepcount += 1;
-   // digitalWrite( led2, HIGH);
-  //}
-  //if (winkel >= 10000){
-    //stepcount += 1;
-   // digitalWrite( led3, HIGH);
-  //}
-/*  if ((stepcount % 2) == 0){
-    digitalWrite( led2, HIGH);
-  }else{
-    digitalWrite( led2, LOW);
-  }*/
-  //accUpdate();
-  //delay(50); 
 }
 
 boolean arrayIncluded(int ary[20], int a){
@@ -143,9 +87,9 @@ void calibrate(){
   float sum2=0;
   for (int i =0; i<100; i++){
     readAccValues();
-    xval[i]=float( accx / 64.0);
-    yval[i]=float( accy / 64.0);
-    zval[i]=float( accz / 64.0);
+    xval[i]=float( accx );
+    yval[i]=float( accy );
+    zval[i]=float( accz );
     sum=xval[i] + sum;    
     sum1+=yval[i];
     sum2+=zval[i];
@@ -156,7 +100,20 @@ void calibrate(){
   zavg=sum2/100.0;
   Serial2.println(xavg);
   Serial2.println(yavg);
-  Serial2.println(zavg);
-  
+  Serial2.println(zavg); 
+}
+
+float fixThreshold(int i, float to[100]){
+  float newthld;
+  float sumto;
+  for(int j = 0; j < 20; j++){
+    sumto += to[i-j]; 
+  }
+  newthld = sumto/20.0;
+  if(newthld >= 6400.0){
+    return newthld;  
+  }else{
+    return 6400.0;
+  }
 }
 
