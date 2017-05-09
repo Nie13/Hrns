@@ -1,10 +1,12 @@
 #include <Arduino.h>
-#include <functiontimer.h>
 #include <ringbuffer.h>
 #include <lsm303.h>
 
 #include <libmaple/i2c.h>
 #include <math.h>
+
+#include "HardwareTimer.h"
+
 
 int led1 = PE9;
 int led2 = PE10;
@@ -22,11 +24,7 @@ long counter = 0;
 int beats[15];
 int steps[15];
 
-void TimerCounter(int arg) {
-  counter += 5;
-
-  timerStart(0, 5, TimerCounter, 0);
-}
+HardwareTimer timer(4);
 
 void DisplayTimer(int arg) {
   Serial2.print("current: ");
@@ -37,8 +35,6 @@ void DisplayTimer(int arg) {
   Serial2.print(maxMagnitude);
   Serial2.print(", steps: ");
   Serial2.println(stepCount);
-  
-  timerStart(1, 500, DisplayTimer, 0);
 }
 
 void setup() {
@@ -54,10 +50,15 @@ void setup() {
   maxMagnitude = 0;
   stepCount = 0;
 
-  timerInit();
-  timerStart(0, 5, TimerCounter, 0);
-  timerStart(1, 500, DisplayTimer, 0);
-
+  timer.setMode(TIMER_CH4, TIMER_OUTPUT_COMPARE);
+  timer.pause();
+  timer.setCount(0);
+  timer.setPrescaleFactor(720000);
+  timer.setOverflow(65535);
+  timer.setCompare(TIMER_CH4, 1);
+  timer.refresh();
+  timer.resume();
+  
   i2c_master_enable(I2C1, 0);
   lsm303Init();
 }
@@ -106,8 +107,7 @@ double calcBPM(double avg) {
 }
 
 void loop() {
-  static int beat = 0;
-  int value = analogRead(htinput);
+  /*
   readAccValues();
   magnitude = sqrt(pow(accx, 2) + pow(accy, 2) + pow(accz, 2));
 
@@ -115,8 +115,7 @@ void loop() {
   if (magnitude > maxMagnitude) maxMagnitude = magnitude;
   
   static int step = 0;
-
-  /*
+  
   Serial2.print("current: ");
   Serial2.print(magnitude);
   Serial2.print(", min: ");
@@ -126,8 +125,8 @@ void loop() {
   Serial2.print(", steps: ");
   Serial2.println(steps);
 
-  delay(500); */
-
+  delay(500);
+  
   if (magnitude > 18000) {
     if (step == 0) {
       step = 1;
@@ -136,8 +135,10 @@ void loop() {
   } else if (magnitude < 17000) {
     step = 0;
   }
-
-  /*
+  */
+  
+  int value = analogRead(htinput);
+  static int beat = 0;
   static int beatCounter = 0;
   static long lastTick = 0;
   
@@ -150,7 +151,8 @@ void loop() {
       Serial2.print(" beat at ");
       Serial2.println(counter);
 
-      long timeElapsed = counter - lastTick;
+      long timeElapsed = timer.getCount();
+      timer.setCount(0);
       Serial2.print(beatCounter);
       Serial2.print(" - ");
       Serial2.print(timeElapsed);
@@ -167,5 +169,5 @@ void loop() {
   } else if (value < 3000) {
     beat = 0;
   }
-  */
+  
 }
