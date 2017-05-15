@@ -24,7 +24,7 @@ int mstepCounter = 0;
 int htinput = PC1;
 long counter = 0;
 int mstepFlag = 0;
-float mThreshold = 4000.0;
+float mThreshold = 5600.0;
 
 int beats[15];
 //int steps[15];
@@ -446,10 +446,10 @@ float fixThreshold(int newenergy){
   //  sumto += to[i-j]; 
   //}
   //newthld = sumto/20.0;
-  if(newenergy >= 4000.0){
+  if(newenergy >= 5600.0){
     return (float)newenergy;  
   }else{
-    return 4000.0;
+    return 5600.0;
   }
 }
 
