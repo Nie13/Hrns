@@ -7,7 +7,7 @@
 
 #include "HardwareTimer.h"
 #include "functiontimer.h"
-#include "ArduinoPedometer.h"
+//#include "ArduinoPedometer.h"
 
 
 int led1 = PE9;
