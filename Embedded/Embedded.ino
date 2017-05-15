@@ -19,9 +19,12 @@ double magnitude;
 double minMagnitude;
 double maxMagnitude;
 int stepCount;
+int mstepCounter = 0;
 
 int htinput = PC1;
 long counter = 0;
+int mstepFlag = 0;
+float mThreshold = 4000.0;
 
 int beats[15];
 //int steps[15];
@@ -189,6 +192,7 @@ int steps,flag=0;
 int currentReading = 0;
 float readings[10];
 
+
 void sendData(int arg) {
   float energy = calcEnergy();
   float heartrate = calcBPM(calcAverage());
@@ -196,7 +200,7 @@ void sendData(int arg) {
   Serial2.print("H:");
   Serial2.print(heartrate);
   Serial2.print(";S:");
-  Serial2.print(sTeps);
+  Serial2.print(mstepCounter);
   Serial2.print(";E:");
   Serial2.print(energy);
   Serial2.println();
@@ -229,7 +233,14 @@ void readPedometer(int arg) {
   }
 
   float reading = getPedo();
-  readings[currentReading++] = reading;
+  readings[currentReading] = reading;
+  currentReading++;
+  if(reading>mThreshold && mstepFlag==0){
+    mstepFlag=1;
+    mstepCounter++;
+  }else if(reading<mThreshold && mstepFlag==1){
+    mstepFlag=0;
+  }
   //Serial2.println(reading);
     
   //Serial2.println(steps);
@@ -245,6 +256,25 @@ int getPedo()
   float xaccl[15]={0};
   float yaccl[15]={0};
   float zaccl[15]={0};
+  /*readAccValues();
+  xaccl[currentReading]=float(accx);
+  yaccl[currentReading]=float(accy);
+  zaccl[currentReading]=float(accz);
+  totvect[currentReading]=sqrt(((xaccl[currentReading]-xavg)* (xaccl[currentReading]-xavg))+ ((yaccl[currentReading] - yavg)*(yaccl[currentReading] - yavg)) + ((zval[currentReading] - zavg)*(zval[currentReading] - zavg)));
+  totave[currentReading]=(totvect[currentReading]+totvect[currentReading-1])/2;
+  if(totave[currentReading]>mThreshold && flag==0){
+    flag=1;
+    return 1;
+  }else if(totave[currentReading]<mThreshold && flag==1){
+    flag=0;
+    return 0;
+  }else{
+    return 0;
+  }*/
+  //problem 1, getPedo timer is 20, sendData data is 100, step count get all number in the array size of 10;
+  //problem 2, 
+  
+  
   for (int i=0;i<15;i++)
   {
     readAccValues();
@@ -332,6 +362,7 @@ float calcEnergy() {
   //Serial2.print("steps counted: ");
   //Serial2.println(count);
   steps += count;
+  mThreshold = fixThreshold(energy);
   return energy;
 }
 
@@ -353,7 +384,7 @@ void stepLoop(int arg) {
     totvect[i] = sqrt(((xaccl[i]-xavg)* (xaccl[i]-xavg))+ ((yaccl[i] - yavg)*(yaccl[i] - yavg)) + ((zval[i] - zavg)*(zval[i] - zavg)));
     totave[i] = (totvect[i] + totvect[i-1]) / 2 ;
 //    Serial2.println(totave[i]);
-    threshhold = fixThreshold(i, totave);
+  //  threshhold = fixThreshold(i, totave);
 //    Serial2.println(threshhold);
     delay(100);
     if (totave[i]>threshhold && flag==0 ){
@@ -408,17 +439,17 @@ void calibrate(){
   Serial2.println(zavg); 
 }
 
-float fixThreshold(int i, float to[100]){
-  float newthld;
-  float sumto;
-  for(int j = 0; j < 20; j++){
-    sumto += to[i-j]; 
-  }
-  newthld = sumto/20.0;
-  if(newthld >= 6400.0){
-    return newthld;  
+float fixThreshold(int newenergy){
+  //float newthld;
+  //float sumto;
+  //for(int j = 0; j < 20; j++){
+  //  sumto += to[i-j]; 
+  //}
+  //newthld = sumto/20.0;
+  if(newenergy >= 4000.0){
+    return (float)newenergy;  
   }else{
-    return 6400.0;
+    return 4000.0;
   }
 }
 
